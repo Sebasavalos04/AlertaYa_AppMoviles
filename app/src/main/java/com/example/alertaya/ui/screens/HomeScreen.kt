@@ -3,6 +3,8 @@ package com.example.alertaya.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,16 +22,25 @@ import com.example.alertaya.ui.theme.*
 import com.example.alertaya.datos.vistamodelo.ClimaViewModel
 import com.example.alertaya.datos.vistamodelo.PronosticoViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import java.text.SimpleDateFormat
 import java.util.*
 
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+    navController: NavController,
+    userName: String,
+    onLogout: () -> Unit
+) {
     val climaViewModel: ClimaViewModel = viewModel()
     val estadoClima = climaViewModel.clima.collectAsState().value
 
     val pronosticoViewModel: PronosticoViewModel = viewModel()
     val listaPronostico = pronosticoViewModel.pronostico.collectAsState().value
+
+    var expanded by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         if (estadoClima == null) {
@@ -40,37 +51,74 @@ fun HomeScreen() {
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        if (estadoClima != null) {
-            Text(estadoClima.nombreCiudad, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Black)
-            Text(obtenerFechaDesdeTimestamp(estadoClima.fechaUnix), fontSize = 14.sp, color = GrayDark)
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            SeccionAlerta()
-
-            ClimaActual(
-                temperatura = estadoClima.informacionPrincipal.temperatura,
-                sensacion = estadoClima.informacionPrincipal.sensacionTermica,
-                humedad = estadoClima.informacionPrincipal.humedad,
-                presion = estadoClima.informacionPrincipal.presion,
-                viento = estadoClima.viento.velocidad
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("AlertaYa") },
+                actions = {
+                    Box {
+                        IconButton(onClick = { expanded = true }) {
+                            Icon(Icons.Default.Menu, contentDescription = "Menú")
+                        }
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Usuario: $userName") },
+                                onClick = { expanded = false }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Cerrar sesión") },
+                                onClick = {
+                                    expanded = false
+                                    onLogout()
+                                }
+                            )
+                        }
+                    }
+                }
             )
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(16.dp)
+        ) {
+            if (estadoClima != null) {
+                Text(estadoClima.nombreCiudad, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Black)
+                Text(obtenerFechaDesdeTimestamp(estadoClima.fechaUnix), fontSize = 14.sp, color = GrayDark)
 
-            val lluviaActual = listaPronostico.firstOrNull()?.lluvia?.cantidad3h ?: 0.0
-            IntensidadLLuvia(lluviaActual)
+                Spacer(modifier = Modifier.height(24.dp))
 
-            val listaLluvia = listaPronostico.take(8).map { it.lluvia?.cantidad3h ?: 0.0 }
-            GraficoIntensidad(listaLluvia)
+                SeccionAlerta()
 
-            Pronostico() // aún está con datos simulados
-        } else {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+                ClimaActual(
+                    temperatura = estadoClima.informacionPrincipal.temperatura,
+                    sensacion = estadoClima.informacionPrincipal.sensacionTermica,
+                    humedad = estadoClima.informacionPrincipal.humedad,
+                    presion = estadoClima.informacionPrincipal.presion,
+                    viento = estadoClima.viento.velocidad
+                )
+
+                val lluviaActual = listaPronostico.firstOrNull()?.lluvia?.cantidad3h ?: 0.0
+                IntensidadLLuvia(lluviaActual)
+
+                val listaLluvia = listaPronostico.take(8).map { it.lluvia?.cantidad3h ?: 0.0 }
+                GraficoIntensidad(listaLluvia)
+
+                Pronostico() // aún está con datos simulados
+            } else {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
             }
         }
     }
 }
+
 
 @Composable
 fun IntensidadLLuvia(lluviaActual: Double) {
@@ -155,7 +203,7 @@ fun SeccionAlerta() {
 fun Pronostico() {
     Column(modifier = Modifier.padding(vertical = 16.dp)) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            TarjetaPronostico("Hoy", "23°C", "Alta", RedAlert)
+            TarjetaPronostico("Hoy", "93°C", "Alta", RedAlert)
             TarjetaPronostico("Mañana", "25°C", "Media", YellowMedium)
             TarjetaPronostico("Miércoles", "26°C", "Baja", BluePrimary)
             TarjetaPronostico("Jueves", "28°C", "Mínima", GreenSuccess)

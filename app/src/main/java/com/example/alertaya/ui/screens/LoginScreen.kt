@@ -1,5 +1,6 @@
 package com.example.alertaya.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
@@ -11,15 +12,19 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.alertaya.ui.theme.Black
 import com.example.alertaya.ui.theme.RedAlert
 import com.example.alertaya.ui.theme.White
-import androidx.navigation.NavController
 
 @Composable
 fun LoginScreen(navController: NavController) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+
+    val loginViewModel: LoginViewModel = viewModel()
+    val loginState by loginViewModel.loginState.collectAsState()
 
     Column(
         modifier = Modifier
@@ -29,7 +34,7 @@ fun LoginScreen(navController: NavController) {
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "🔔 AlertaYa",
+            text = "AlertaYa",
             fontSize = 32.sp,
             fontWeight = FontWeight.Bold,
             color = Black
@@ -61,42 +66,14 @@ fun LoginScreen(navController: NavController) {
 
         Button(
             onClick = {
-                if (email == "admin@correo.com" && password == "123456") {
-                    navController.navigate("home")
-                }
+                loginViewModel.login(email, password)
             },
-                    modifier = Modifier
+            modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Black)
         ) {
             Text(text = "Iniciar Sesión", color = White)
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text = "¿Olvidaste tu contraseña?",
-            color = RedAlert,
-            fontSize = 14.sp
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        OutlinedButton(
-            onClick = { /* TODO */ },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Continuar con Google")
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        OutlinedButton(
-            onClick = { /* TODO */ },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Continuar con Apple")
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -106,8 +83,30 @@ fun LoginScreen(navController: NavController) {
             Text(
                 text = "Regístrate",
                 color = RedAlert,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.clickable {
+                    navController.navigate("register")
+                }
             )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Mostrar mensajes según el estado del login
+        when (val state = loginState) {
+            is LoginState.Loading -> {
+                Text("Iniciando sesión...", color = Black)
+            }
+            is LoginState.Error -> {
+                Text("Error: ${state.message}", color = RedAlert)
+            }
+            is LoginState.Success -> {
+                // Navegar al home solo una vez
+                LaunchedEffect(Unit) {
+                    navController.navigate("home")
+                }
+            }
+            else -> {}
         }
     }
 }
