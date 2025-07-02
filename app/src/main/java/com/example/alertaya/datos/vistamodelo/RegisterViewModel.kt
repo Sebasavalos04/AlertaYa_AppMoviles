@@ -1,4 +1,4 @@
-package com.example.alertaya.ui.screens
+package com.example.alertaya.datos.vistamodelo
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -7,8 +7,6 @@ import com.example.alertaya.datos.remoto.auth.AuthRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import retrofit2.HttpException
-import java.io.IOException
 
 sealed class RegisterState {
     object Idle : RegisterState()

@@ -1,4 +1,4 @@
-package com.example.alertaya.data.model
+package com.example.alertaya.data.model.response
 
 import com.google.gson.annotations.SerializedName
 
@@ -27,7 +27,3 @@ data class PronosticoPorHora(
     val fechaTexto: String
 )
 
-data class Lluvia(
-    @SerializedName("3h")
-    val cantidad3h: Double
-)

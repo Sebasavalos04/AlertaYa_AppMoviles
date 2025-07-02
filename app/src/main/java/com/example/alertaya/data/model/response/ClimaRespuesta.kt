@@ -1,4 +1,4 @@
-package com.example.alertaya.data.model
+package com.example.alertaya.data.model.response
 
 import com.google.gson.annotations.SerializedName
 
@@ -44,4 +44,8 @@ data class ClimaDescripcion(
 data class Viento(
     @SerializedName("speed")
     val velocidad: Double
+)
+data class Lluvia(
+    @SerializedName("3h")
+    val cantidad3h: Double
 )

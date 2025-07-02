@@ -2,9 +2,9 @@ package com.example.alertaya.datos.vistamodelo
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.alertaya.data.model.PronosticoPorHora
-import com.example.alertaya.data.model.PronosticoRespuesta
-import com.example.alertaya.datos.remoto.ClienteClima
+import com.example.alertaya.data.model.response.PronosticoPorHora
+import com.example.alertaya.data.model.response.PronosticoRespuesta
+import com.example.alertaya.datos.remoto.auth.ClienteClima
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch

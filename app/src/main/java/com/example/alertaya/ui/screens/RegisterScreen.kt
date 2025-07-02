@@ -1,6 +1,4 @@
 package com.example.alertaya.ui.screens
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
@@ -15,8 +13,9 @@ import androidx.navigation.NavController
 import com.example.alertaya.ui.theme.Black
 import com.example.alertaya.ui.theme.RedAlert
 import com.example.alertaya.ui.theme.White
-import kotlinx.coroutines.delay
 import androidx.compose.runtime.LaunchedEffect
+import com.example.alertaya.datos.vistamodelo.RegisterState
+import com.example.alertaya.datos.vistamodelo.RegisterViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

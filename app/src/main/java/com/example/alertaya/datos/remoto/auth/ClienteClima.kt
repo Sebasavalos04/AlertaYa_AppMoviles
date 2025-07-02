@@ -1,4 +1,4 @@
-package com.example.alertaya.datos.remoto
+package com.example.alertaya.datos.remoto.auth
 
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory

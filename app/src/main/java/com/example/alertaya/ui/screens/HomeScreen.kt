@@ -2,7 +2,9 @@ package com.example.alertaya.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
@@ -23,6 +25,9 @@ import com.example.alertaya.datos.vistamodelo.ClimaViewModel
 import com.example.alertaya.datos.vistamodelo.PronosticoViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.alertaya.data.model.response.PronosticoPorHora
+import com.example.alertaya.datos.vistamodelo.AlertaViewModel
+import kotlinx.coroutines.flow.StateFlow
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -36,6 +41,9 @@ fun HomeScreen(
 ) {
     val climaViewModel: ClimaViewModel = viewModel()
     val estadoClima = climaViewModel.clima.collectAsState().value
+    val alertaViewModel: AlertaViewModel = viewModel()
+    val nivelAlerta: StateFlow<String> = alertaViewModel.nivelAlerta
+    val recomendaciones: StateFlow<List<String>> = alertaViewModel.recomendaciones
 
     val pronosticoViewModel: PronosticoViewModel = viewModel()
     val listaPronostico = pronosticoViewModel.pronostico.collectAsState().value
@@ -49,6 +57,7 @@ fun HomeScreen(
         if (listaPronostico.isEmpty()) {
             pronosticoViewModel.cargarPronostico("Trujillo,PE", "2aa81b66e47c7560e89756278cc3ff2d")
         }
+        alertaViewModel.cargarAlerta("Trujillo,PE", "2aa81b66e47c7560e89756278cc3ff2d")
     }
 
     Scaffold(
@@ -81,9 +90,11 @@ fun HomeScreen(
             )
         }
     ) { innerPadding ->
+        val scrollState = rememberScrollState()
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .verticalScroll(scrollState)
                 .padding(innerPadding)
                 .padding(16.dp)
         ) {
@@ -93,7 +104,7 @@ fun HomeScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                SeccionAlerta()
+                SeccionAlerta(viewModel = alertaViewModel)
 
                 ClimaActual(
                     temperatura = estadoClima.informacionPrincipal.temperatura,
@@ -109,7 +120,7 @@ fun HomeScreen(
                 val listaLluvia = listaPronostico.take(8).map { it.lluvia?.cantidad3h ?: 0.0 }
                 GraficoIntensidad(listaLluvia)
 
-                Pronostico() // aún está con datos simulados
+                Pronostico(listaPronostico) // aún está con datos simulados
             } else {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
@@ -184,32 +195,35 @@ fun ClimaActual(temperatura: Double, sensacion: Double, humedad: Int, presion: I
 }
 
 @Composable
-fun SeccionAlerta() {
+fun SeccionAlerta(viewModel: AlertaViewModel = viewModel()) {
+    val nivelAlerta by viewModel.nivelAlerta.collectAsState()
+    val recomendaciones by viewModel.recomendaciones.collectAsState()
+
     Column(
-        modifier = Modifier.fillMaxWidth()
-            .background(RedAlert.copy(alpha = 0.1f), shape = RoundedCornerShape(8.dp))
+        modifier = Modifier
+            .fillMaxWidth()
             .padding(16.dp)
     ) {
-        Text("Alerta Actual: Alta", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = RedAlert)
-        Spacer(modifier = Modifier.height(4.dp))
         Text(
-            "Lluvia intensa\nPosibles inundaciones en zonas bajas.\nSe recomienda evitar salir y mantenerse en lugares seguros.",
-            fontSize = 14.sp, color = Black
+            text = "Nivel de alerta: $nivelAlerta",
+            style = MaterialTheme.typography.titleMedium,
+            color = when (nivelAlerta) {
+                "Fuerte" -> Color.Red
+                "Moderada" -> Color(0xFFFFA000) // Ámbar
+                "Suave" -> Color(0xFF1976D2) // Azul
+                else -> Color(0xFF388E3C) // Verde
+            }
         )
-    }
-}
 
-@Composable
-fun Pronostico() {
-    Column(modifier = Modifier.padding(vertical = 16.dp)) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            TarjetaPronostico("Hoy", "93°C", "Alta", RedAlert)
-            TarjetaPronostico("Mañana", "25°C", "Media", YellowMedium)
-            TarjetaPronostico("Miércoles", "26°C", "Baja", BluePrimary)
-            TarjetaPronostico("Jueves", "28°C", "Mínima", GreenSuccess)
-        }
         Spacer(modifier = Modifier.height(8.dp))
-        Text("Ver más", color = BluePrimary, fontSize = 14.sp)
+
+        recomendaciones.forEach { recomendacion ->
+            Text(
+                text = "• $recomendacion",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(bottom = 4.dp)
+            )
+        }
     }
 }
 
@@ -226,6 +240,47 @@ fun TarjetaPronostico(dia: String, temp: String, nivel: String, color: Color) {
         Text(nivel, fontSize = 14.sp, color = color)
     }
 }
+@Composable
+fun Pronostico(listaPronostico: List<PronosticoPorHora>) {
+    Column(modifier = Modifier.padding(vertical = 16.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            listaPronostico.take(4).forEachIndexed { index, item ->
+                val dia = when (index) {
+                    0 -> "Hoy"
+                    1 -> "Mañana"
+                    2 -> "Miércoles"
+                    3 -> "Jueves"
+                    else -> "Día"
+                }
+
+                val temp = "${item.informacionPrincipal.temperatura.toInt()}°C"
+                val nivel = when {
+                    item.informacionPrincipal.temperatura >= 30 -> "Alta"
+                    item.informacionPrincipal.temperatura >= 25 -> "Media"
+                    item.informacionPrincipal.temperatura >= 20 -> "Baja"
+                    else -> "Mínima"
+                }
+
+                val color = when (nivel) {
+                    "Alta" -> RedAlert
+                    "Media" -> YellowMedium
+                    "Baja" -> BluePrimary
+                    else -> GreenSuccess
+                }
+
+                    TarjetaPronostico(dia, temp, nivel, color)
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+        Text("Ver más", color = BluePrimary, fontSize = 14.sp)
+    }
+}
+
+
 
 fun obtenerFechaDesdeTimestamp(timestamp: Long): String {
     val formato = SimpleDateFormat("EEEE, d 'de' MMMM, yyyy", Locale("es", "ES"))

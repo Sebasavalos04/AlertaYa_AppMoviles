@@ -9,8 +9,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.alertaya.ui.screens.HomeScreen
 import com.example.alertaya.ui.screens.LoginScreen
-import com.example.alertaya.ui.screens.LoginState
-import com.example.alertaya.ui.screens.LoginViewModel
+import com.example.alertaya.datos.vistamodelo.LoginState
+import com.example.alertaya.datos.vistamodelo.LoginViewModel
 import com.example.alertaya.ui.screens.RegisterScreen
 
 object Routes {

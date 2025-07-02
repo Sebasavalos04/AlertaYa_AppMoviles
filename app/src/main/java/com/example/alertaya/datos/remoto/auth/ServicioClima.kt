@@ -1,7 +1,7 @@
-package com.example.alertaya.datos.remoto
+package com.example.alertaya.datos.remoto.auth
 
-import com.example.alertaya.data.model.ClimaRespuesta
-import com.example.alertaya.data.model.PronosticoRespuesta
+import com.example.alertaya.data.model.response.ClimaRespuesta
+import com.example.alertaya.data.model.response.PronosticoRespuesta
 import retrofit2.http.GET
 import retrofit2.http.Query
 

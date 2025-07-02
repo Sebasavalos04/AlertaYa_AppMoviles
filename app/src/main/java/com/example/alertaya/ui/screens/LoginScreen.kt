@@ -14,6 +14,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.alertaya.datos.vistamodelo.LoginState
+import com.example.alertaya.datos.vistamodelo.LoginViewModel
 import com.example.alertaya.ui.theme.Black
 import com.example.alertaya.ui.theme.RedAlert
 import com.example.alertaya.ui.theme.White

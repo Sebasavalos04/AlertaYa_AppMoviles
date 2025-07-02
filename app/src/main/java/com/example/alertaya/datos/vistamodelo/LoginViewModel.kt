@@ -1,4 +1,4 @@
-package com.example.alertaya.ui.screens
+package com.example.alertaya.datos.vistamodelo
 
 import android.util.Log
 import androidx.lifecycle.ViewModel

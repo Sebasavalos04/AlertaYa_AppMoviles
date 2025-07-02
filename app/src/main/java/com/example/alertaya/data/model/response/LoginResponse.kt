@@ -5,5 +5,4 @@ data class LoginResponse(
     val name: String,
     val email: String,
     val userId: Long
-    // Puedes añadir más campos si tu backend devuelve más info
 )
